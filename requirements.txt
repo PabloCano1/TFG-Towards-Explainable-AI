@@ -1,0 +1,20 @@
+# Core dependencies used in notebooks and scripts
+transformers==4.54.0
+trl>=0.18.2
+peft>=0.15.2
+datasets
+huggingface_hub
+hf_transfer
+torch>=1.13.0
+bitsandbytes
+accelerate
+tqdm
+pandas
+numpy
+sentencepiece
+jupyterlab
+matplotlib
+seaborn
+scipy
+scikit-learn
+openpyxl

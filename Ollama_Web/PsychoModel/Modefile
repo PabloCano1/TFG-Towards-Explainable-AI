@@ -1,8 +1,0 @@
-FROM ./model.gguf
-
-PARAMETER stop "<end_of_turn>"
-PARAMETER stop "<eos>"
-PARAMETER repeat_penalty 50000
-PARAMETER num_predict 1024
-PARAMETER repeat_last_n -1
-PARAMETER temperature 0.2
