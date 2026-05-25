@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ollama Chat — Psychologist Session</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #e8e6e1;
+    --text-muted: #888;
+    --accent: #5fcf9e;
+    --accent-dim: rgba(95, 207, 158, 0.12);
+    --user-bg: #1e2e26;
+    --user-border: rgba(95, 207, 158, 0.3);
+    --assistant-bg: #1e1e1e;
+    --radius: 12px;
+    --font-mono: 'Courier New', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    flex: 1;
+  }
+
+  .header-title h1 {
+    font-size: 15px;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  .header-title p {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-top: 2px;
+    letter-spacing: 0.03em;
+  }
+
+  .model-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .model-selector label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    outline: none;
+    min-width: 160px;
+  }
+
+  select:hover { border-color: var(--accent); }
+  select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #555;
+    flex-shrink: 0;
+  }
+
+  .status-dot.online { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+  }
+
+  #chat::-webkit-scrollbar { width: 4px; }
+  #chat::-webkit-scrollbar-track { background: transparent; }
+  #chat::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .message {
+    display: flex;
+    gap: 12px;
+    max-width: 780px;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+  .message.assistant { align-self: flex-start; }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .message.user .avatar {
+    background: var(--accent-dim);
+    border: 1px solid var(--user-border);
+    color: var(--accent);
+  }
+
+  .message.assistant .avatar {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .bubble {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .message.user .bubble {
+    background: var(--user-bg);
+    border: 1px solid var(--user-border);
+    border-top-right-radius: 3px;
+    color: #d4f0e4;
+  }
+
+  .message.assistant .bubble {
+    background: var(--assistant-bg);
+    border: 1px solid var(--border);
+    border-top-left-radius: 3px;
+    color: var(--text);
+  }
+
+  .typing-indicator {
+    display: flex;
+    gap: 5px;
+    padding: 14px 16px;
+    align-items: center;
+  }
+
+  .typing-indicator span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+
+  .empty-state p:first-child { font-size: 28px; margin-bottom: 8px; }
+
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 16px 24px;
+    flex-shrink: 0;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  textarea {
+    flex: 1;
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    font-family: Georgia, serif;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+    min-height: 48px;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+
+  textarea::placeholder { color: var(--text-muted); }
+  textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
+
+  button#send-btn {
+    background: var(--accent);
+    color: #0a1f14;
+    border: none;
+    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s, transform 0.1s;
+    font-size: 18px;
+  }
+
+  button#send-btn:hover { opacity: 0.85; }
+  button#send-btn:active { transform: scale(0.95); }
+  button#send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .error-msg {
+    background: rgba(220, 60, 60, 0.12);
+    border: 1px solid rgba(220, 60, 60, 0.3);
+    color: #f08080;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: var(--font-mono);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    <h1>// OLLAMA CHAT</h1>
+    <p>psychologist interview simulation</p>
+  </div>
+  <div class="model-selector">
+    <div class="status-dot" id="status-dot"></div>
+    <label for="model-select">MODEL</label>
+    <select id="model-select">
+      <option value="">loading...</option>
+    </select>
+  </div>
+</header>
+
+<div id="chat">
+  <div class="empty-state" id="empty-state">
+    <p>🧠</p>
+    <p>Select a model and start the session</p>
+    <p style="font-size:11px; opacity:0.5;">The patient awaits your first question</p>
+  </div>
+</div>
+
+<footer>
+  <div class="input-row">
+    <textarea id="user-input" placeholder="Ask the patient something..." rows="1"></textarea>
+    <button id="send-btn" title="Send" disabled>➤</button>
+  </div>
+</footer>
+
+<script>
+const OLLAMA_BASE = 'http://localhost:11434';
+
+const chatEl = document.getElementById('chat');
+const emptyState = document.getElementById('empty-state');
+const modelSelect = document.getElementById('model-select');
+const userInput = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
+const statusDot = document.getElementById('status-dot');
+
+async function loadModels() {
+  try {
+    const res = await fetch(`${OLLAMA_BASE}/api/tags`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const models = data.models || [];
+    modelSelect.innerHTML = '';
+    if (models.length === 0) {
+      modelSelect.innerHTML = '<option value="">no models found</option>';
+      return;
+    }
+    models.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.name;
+      opt.textContent = m.name;
+      modelSelect.appendChild(opt);
+    });
+    statusDot.classList.add('online');
+    sendBtn.disabled = false;
+  } catch {
+    modelSelect.innerHTML = '<option value="">connection error</option>';
+    statusDot.classList.remove('online');
+  }
+}
+
+function buildPrompt(userMessage) {
+  return `You are a patient that has gone to do an interview with a psychologist. The psychologist will ask you a series of questions and you will answer them in a natural way:\n### Input:\n${userMessage}\n\n### Expected Response:\n`;
+}
+
+function appendMessage(role, text) {
+  emptyState.style.display = 'none';
+  const msg = document.createElement('div');
+  msg.className = `message ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = role === 'user' ? 'PSY' : 'PAT';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chatEl.appendChild(msg);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return bubble;
+}
+
+function appendTyping() {
+  emptyState.style.display = 'none';
+  const msg = document.createElement('div');
+  msg.className = 'message assistant';
+  msg.id = 'typing-msg';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = 'PAT';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble typing-indicator';
+  bubble.innerHTML = '<span></span><span></span><span></span>';
+
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chatEl.appendChild(msg);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return msg;
+}
+
+async function sendMessage() {
+  const text = userInput.value.trim();
+  const model = modelSelect.value;
+  if (!text || !model) return;
+
+  appendMessage('user', text);
+  userInput.value = '';
+  userInput.style.height = 'auto';
+  sendBtn.disabled = true;
+
+  const typingEl = appendTyping();
+
+  try {
+    const prompt = buildPrompt(text);
+    const res = await fetch(`${OLLAMA_BASE}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, prompt, stream: true })
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    typingEl.remove();
+    const bubble = appendMessage('assistant', '');
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const json = JSON.parse(line);
+          if (json.response) {
+            bubble.textContent += json.response;
+            chatEl.scrollTop = chatEl.scrollHeight;
+          }
+        } catch {}
+      }
+    }
+  } catch (err) {
+    typingEl.remove();
+    emptyState.style.display = 'none';
+    const errEl = document.createElement('div');
+    errEl.className = 'error-msg';
+    errEl.textContent = `Error: ${err.message}. Is Ollama running on localhost:11434?`;
+    chatEl.appendChild(errEl);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  } finally {
+    sendBtn.disabled = false;
+    userInput.focus();
+  }
+}
+
+userInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+userInput.addEventListener('input', () => {
+  userInput.style.height = 'auto';
+  userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px';
+});
+
+sendBtn.addEventListener('click', sendMessage);
+
+loadModels();
+</script>
+</body>
+</html>
