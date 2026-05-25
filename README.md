@@ -56,7 +56,7 @@ Below is an outline of the files included in `code/` and a short description of 
   - `healthy-control-training-gemma.ipynb`: Equivalent notebook for the healthy-control model.
 
 - `code/03_fidelity_validation/`
-  - `patient_healthy_control_results.ipynb`: Evaluation and fidelity analysis between models, plus comparative metrics.
+  - `fidelity_validation.ipynb`: Evaluation and fidelity analysis between models, plus comparative metrics.
 
 - `code/04_model_deployment/`
   - `ollama-chat.html`: Example web interface to interact with locally served models (Ollama).
