@@ -18,3 +18,8 @@ seaborn
 scipy
 scikit-learn
 openpyxl
+evaluate
+bert_score
+nltk
+rouge_score
+imblearn
