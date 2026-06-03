@@ -96,5 +96,4 @@ This project was developed by **Pablo Ramón Cano Ortiz** under the supervision 
 
 For a full description of the project motivation, methodological framework, and implementation details, please refer to the accompanying undergraduate thesis manuscript.
 
-For questions about the repository, the methodology, or potential academic and technical collaborations, please contact the author at  
-[pablo.cano.ortiz@alumnos.upm.es](mailto:pablo.cano.ortiz@alumnos.upm.es). 
+For questions about the repository, the methodology, or potential academic and technical collaborations, please contact the author at [pablo.cano.ortiz@alumnos.upm.es](mailto:pablo.cano.ortiz@alumnos.upm.es). 
