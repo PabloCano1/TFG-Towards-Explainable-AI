@@ -10,12 +10,12 @@ The goal of the project is to investigate whether population-specific Language M
 - `transcripts/Discourse-UWO` - transcriptions downloaded from PsychosisBank
 
 
-## Dataset and ethical considerations
+## Dataset
 The project relies on the Discourse-UWO corpus, a collection of clinical interviews recorded with the Discourse Protocol, including both healthy control participants and individuals with psychosis, as well as baseline and follow-up sessions.
 
 The raw transcripts themselves are not included in this repository. To reproduce the experiments, users must:
 
-1. Request access to the dataset through PsychosisBank.
+1. Request access to the dataset through [PsychosisBank](https://talkbank.org/psychosis/index.html).
 
 2. Download and store the transcripts in the appropriate directory, following the dataset’s terms of use and ethical guidelines.
 
@@ -47,7 +47,7 @@ Below is an outline of the files included in `code/` and a short description of 
 
   - `ordered_healthy_preoprocessing_discourse.ipynb`: Notebook to preprocess and order healthy-control transcriptions.
   - `ordered_patient_preoprocessing_discourse.ipynb`: Notebook to preprocess and order patient transcriptions.
-    - `analysis.ipynb`: Initial data exploration notes; visualizations and sanity checks.
+  - `analysis.ipynb`: Initial data exploration notes; visualizations and sanity checks.
 
 - `code/02_training/`
   - `patient-training-gemma.ipynb`: Training notebook for the patient model.
@@ -84,7 +84,9 @@ Below is an outline of the files included in `code/` and a short description of 
 
 Each folder contains notebooks/scripts intended to be executed in the order above: first prepare and order the data in `01_preprocessing`, then train models in `02_training`, evaluate in `03_fidelity_validation` and run classification experiments and analysis in `05_classifiers`.
 
+##  Ethical considerations
 
+This work involves the use of clinical interview transcripts, which must be considered highly sensitive medical data. For this reason, any collection, storage, processing, or deployment of AI-based systems in this domain must be carried out with special care, guaranteeing privacy, confidentiality, and strict compliance with data protection regulations. In addition, because these models operate in a mental health context, their outputs should always be interpreted with caution and under professional supervision, since an incorrect use or overinterpretation of the results could have serious consequences for patients.
 
 ## Author and supervisors
 
