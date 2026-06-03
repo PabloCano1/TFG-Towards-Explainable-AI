@@ -58,7 +58,7 @@ Below is an outline of the files included in `code/` and a short description of 
 
 - `code/04_model_deployment/`
   - `ollama-chat-updated.html`: Web interface to interact with the models through chat or videocall.
-  - `ollama_proxy.py`: Python proxy that exposes same-origin  routes, serves the web interface and forwards requests to Ollama.
+  - `ollama_proxy.py`: Serves the web interface and forwards requests to Ollama.
   - `HealthyModel/Modefile` and `HealthyModel/model.gguf`: Configuration file and the model prepared for Ollama (healthy control) (you should download the corresponding GGUF).
   - `PsychoModel/Modefile` and `PsychoModel/model.gguf`: Configuration file and the model prepared for Ollama (patients with psychosis) (you should download the corresponding GGUF).
 
